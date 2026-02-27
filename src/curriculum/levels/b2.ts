@@ -1,0 +1,147 @@
+import { CEFRLevel } from "@/generated/prisma/enums";
+import { LevelCurriculum } from "../types";
+
+export const b2Curriculum: LevelCurriculum = {
+  level: CEFRLevel.B2,
+  label: "Upper Intermediate",
+  description: "Can understand the main ideas of complex text. Can interact with a degree of fluency and spontaneity with native speakers.",
+  languageBalance: "Entirely French. English is never used unless the learner is genuinely stuck and explicitly requests it. Behave as a native French conversation partner.",
+  vocabularyClusters: [
+    {
+      name: "Idiomatic expressions",
+      conceptId: "vocab.idiomatic_expressions",
+      words: ["avoir le cafard", "poser un lapin", "tomber dans les pommes", "en avoir marre", "être au courant", "couper les cheveux en quatre", "mettre les pieds dans le plat"],
+    },
+    {
+      name: "Professional French",
+      conceptId: "vocab.professional_french",
+      words: ["contrat", "négociation", "stratégie", "bilan", "rapport", "faire le point", "objectif", "rentabilité", "gestion", "cahier des charges"],
+    },
+    {
+      name: "Cultural references",
+      conceptId: "vocab.cultural_references",
+      words: ["patrimoine", "laïcité", "francophonie", "banlieue", "hexagone", "métropole", "outre-mer", "provinces"],
+    },
+    {
+      name: "Science & tech",
+      conceptId: "vocab.science_tech",
+      words: ["données", "algorithme", "intelligence artificielle", "changement climatique", "énergie renouvelable", "numérique", "réseau"],
+    },
+    {
+      name: "Formal register",
+      conceptId: "vocab.formal_register",
+      words: ["je vous prie de", "veuillez", "j'ai l'honneur de", "cordialement", "je me permets de", "ci-joint", "suite à"],
+    },
+    {
+      name: "Nuanced connectors",
+      conceptId: "vocab.nuanced_connectors",
+      words: ["quoique", "quand bien même", "d'autant plus que", "en l'occurrence", "toujours est-il", "force est de constater"],
+    },
+  ],
+  grammarConcepts: [
+    {
+      conceptId: "grammar.subjonctif_advanced",
+      name: "Subjonctif — all triggers",
+      description: "All remaining subjunctive triggers and subjunctive vs indicative distinction",
+      examples: ["Je doute qu'il vienne.", "Il est possible qu'elle ait raison.", "Je pense qu'il a raison (indicative)."],
+    },
+    {
+      conceptId: "grammar.conditionnel_passe",
+      name: "Conditionnel passé",
+      description: "Past conditional for regrets and type 3 si clauses",
+      examples: ["J'aurais voulu y aller.", "Si j'avais su, j'aurais agi autrement.", "Il aurait dû partir plus tôt."],
+    },
+    {
+      conceptId: "grammar.futur_anterieur",
+      name: "Futur antérieur",
+      description: "Future perfect for actions completed before a future point",
+      examples: ["Quand j'aurai fini, je t'appellerai.", "D'ici demain, il sera parti."],
+    },
+    {
+      conceptId: "grammar.passive_all",
+      name: "Passive voice — all tenses",
+      description: "Passive constructions across past, present, and future",
+      examples: ["La décision a été prise.", "Le projet sera terminé demain.", "Le bâtiment avait été construit en 1920."],
+    },
+    {
+      conceptId: "grammar.discours_indirect",
+      name: "Reported speech (discours indirect)",
+      description: "Tense shifting rules for indirect speech",
+      examples: ["Il a dit qu'il viendrait.", "Elle m'a demandé si j'avais fini.", "Il a expliqué qu'il avait eu un problème."],
+    },
+    {
+      conceptId: "grammar.subjonctif_passe",
+      name: "Subjonctif passé",
+      description: "Past subjunctive for completed actions in subjunctive contexts",
+      examples: ["Je suis content que tu aies réussi.", "Il est possible qu'il soit déjà parti."],
+    },
+    {
+      conceptId: "grammar.passe_simple_recognition",
+      name: "Passé simple (recognition)",
+      description: "Recognizing literary past tense in written French",
+      examples: ["Il entra dans la salle.", "Ils partirent à l'aube.", "Elle prit une décision."],
+    },
+    {
+      conceptId: "grammar.nominalisation",
+      name: "Nominalisation",
+      description: "Converting verbs/adjectives to nouns",
+      examples: ["analyser → l'analyse", "décider → la décision", "possible → la possibilité"],
+    },
+    {
+      conceptId: "grammar.register_shifting",
+      name: "Register shifting",
+      description: "Adapting language between formal and informal contexts",
+      examples: ["Formal: Je vous prie d'agréer... / Informal: À plus!", "Formal: Veuillez / Informal: S'il te plaît"],
+    },
+  ],
+  listeningTasks: [
+    "Follow nuanced arguments and detect subtleties",
+    "Detect tone, humor, and sarcasm",
+    "Engage at fully native-speed French",
+  ],
+  readingTasks: [
+    "Newspaper and magazine articles",
+    "Literary excerpts from French authors",
+    "Argumentative essays",
+    "Technical texts in familiar fields",
+  ],
+  speakingTasks: [
+    "Debate complex topics",
+    "Present structured arguments",
+    "Explain complex processes clearly",
+    "Negotiate and persuade",
+    "Paraphrase and reformulate ideas",
+  ],
+  writingTasks: [
+    "Essay format with thesis and argumentation",
+    "Formal correspondence and professional emails",
+    "Structured argumentation for and against",
+    "Summary and analysis of complex text",
+  ],
+  masteryEvidence: [
+    "Uses conditional past for complex hypotheticals",
+    "Produces accurate reported speech with tense shifts",
+    "Demonstrates register awareness (formal/informal switching)",
+    "Can debate topics with nuanced vocabulary",
+    "Sustained error rate <15% for core grammar across sessions",
+    "Fully French conversation — no English ever needed",
+    "800+ active vocabulary across all registers",
+  ],
+  conceptIds: [
+    "grammar.subjonctif_advanced",
+    "grammar.conditionnel_passe",
+    "grammar.futur_anterieur",
+    "grammar.passive_all",
+    "grammar.discours_indirect",
+    "grammar.subjonctif_passe",
+    "grammar.passe_simple_recognition",
+    "grammar.nominalisation",
+    "grammar.register_shifting",
+    "vocab.idiomatic_expressions",
+    "vocab.professional_french",
+    "vocab.cultural_references",
+    "vocab.science_tech",
+    "vocab.formal_register",
+    "vocab.nuanced_connectors",
+  ],
+};

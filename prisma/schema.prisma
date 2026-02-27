@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CEFRLevel {
+  A0
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum SessionType {
+  PLACEMENT
+  LESSON
+  FREE_CONVERSATION
+  REVIEW
+}
+
+enum ConceptType {
+  GRAMMAR
+  VOCABULARY
+  PRONUNCIATION
+  CULTURE
+  PRAGMATICS
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  passwordHash       String?
+  name               String
+  image              String?
+  nativeLanguage     String              @default("en")
+  targetLanguage     String              @default("fr")
+  currentCEFRLevel   CEFRLevel           @default(A0)
+  placementCompleted Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  accounts           Account[]
+  sessions           ConversationSession[]
+  skillProfile       SkillProfile?
+  conceptMasteries   ConceptMastery[]
+  levelHistory       LevelHistory[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model SkillProfile {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  currentLevel         CEFRLevel @default(A0)
+  comprehensionScore   Float     @default(0)
+  vocabularyScore      Float     @default(0)
+  grammarScore         Float     @default(0)
+  fluencyScore         Float     @default(0)
+  overallConfidence    Float     @default(0)
+  placementCompletedAt DateTime?
+  lastAssessedAt       DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("skill_profiles")
+}
+
+model ConversationSession {
+  id            String      @id @default(cuid())
+  userId        String
+  sessionNumber Int
+  sessionType   SessionType
+  aiModel       String      @default("claude-haiku-4-20250414")
+  messageCount  Int         @default(0)
+  focusConcepts String[]    @default([])
+  startedAt     DateTime    @default(now())
+  endedAt       DateTime?
+
+  user     User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages ConversationMessage[]
+  summary  SessionSummary?
+
+  @@unique([userId, sessionNumber])
+  @@map("conversation_sessions")
+}
+
+model ConversationMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  role      MessageRole
+  content   String      @db.Text
+  createdAt DateTime    @default(now())
+
+  session ConversationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("conversation_messages")
+}
+
+model ConceptMastery {
+  id            String      @id @default(cuid())
+  userId        String
+  conceptId     String
+  conceptType   ConceptType
+  masteryScore  Float       @default(0)
+  practiceCount Int         @default(0)
+  lastPracticed DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conceptId])
+  @@index([userId])
+  @@map("concept_masteries")
+}
+
+model LevelHistory {
+  id        String    @id @default(cuid())
+  userId    String
+  fromLevel CEFRLevel
+  toLevel   CEFRLevel
+  reason    String    @db.Text
+  changedAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("level_histories")
+}
+
+model SessionSummary {
+  id                    String @id @default(cuid())
+  sessionId             String @unique
+  topicsCovered         String @default("") @db.Text
+  vocabularyIntroduced  String @default("") @db.Text
+  grammarPracticed      String @default("") @db.Text
+  errorsObserved        String @default("") @db.Text
+  overallNotes          String @default("") @db.Text
+
+  session ConversationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("session_summaries")
+}

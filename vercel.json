@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "npx prisma generate && next build",
+  "functions": {
+    "src/pages/api/chat/stream.ts": {
+      "maxDuration": 60
+    },
+    "src/pages/api/sessions/[id]/analyze.ts": {
+      "maxDuration": 30
+    },
+    "src/pages/api/placement/analyze.ts": {
+      "maxDuration": 30
+    }
+  }
+}
