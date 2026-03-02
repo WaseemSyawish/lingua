@@ -256,6 +256,29 @@ export const STORE_ITEMS: StoreItem[] = [
   },
 ];
 
+/**
+ * Free perks automatically granted on level-up.
+ * Every even level awards one free boost item.
+ * Values are arrays of item IDs from STORE_ITEMS.
+ */
+export const LEVEL_UP_FREE_PERKS: Record<number, string[]> = {
+  2:  ["hint-pack"],
+  4:  ["double-xp-1"],
+  6:  ["vocab-booster"],
+  8:  ["streak-freeze"],
+  10: ["xp-rush"],
+  12: ["bonus-review"],
+  14: ["grammar-shield"],
+  16: ["hint-pack"],
+  18: ["double-xp-1"],
+  20: ["vocab-booster"],
+  22: ["streak-freeze"],
+  24: ["xp-rush"],
+  26: ["bonus-review"],
+  28: ["grammar-shield"],
+  30: ["hint-pack"],
+};
+
 /** Get items available at a given level */
 export function getAvailableItems(level: number): StoreItem[] {
   return STORE_ITEMS.filter((item) => item.levelRequired <= level);

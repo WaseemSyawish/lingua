@@ -294,6 +294,7 @@ export default async function handler(
     let xpAwarded = 0;
     let leveledUp = false;
     let newLevel = 0;
+    let freePerks: Array<{ id: string; name: string; description: string; icon: string }> = [];
     try {
       // Count concept improvements (positive delta)
       const conceptImprovements = conceptResults.filter((c) => c.delta > 0).length;
@@ -315,6 +316,7 @@ export default async function handler(
         xpAwarded = sessionXp;
         leveledUp = xpResult.leveledUp;
         newLevel = xpResult.xpLevel;
+        freePerks = xpResult.freePerks.map(({ id, name, description, icon }) => ({ id, name, description, icon }));
 
         // Award coins for session completion
         const coinReward = 15 + (xpResult.leveledUp ? 100 : 0);
@@ -347,6 +349,7 @@ export default async function handler(
       xpAwarded,
       leveledUp,
       newLevel,
+      freePerks,
     });
   } catch (error: any) {
     console.error("Session analysis error:", error);

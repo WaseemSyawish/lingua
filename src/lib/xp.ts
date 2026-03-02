@@ -4,6 +4,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import { calculateLevel } from "@/lib/xp-constants";
+import { LEVEL_UP_FREE_PERKS, STORE_ITEMS, type StoreItem } from "@/lib/store-constants";
 
 // Re-export all client-safe utilities so existing server imports still work
 export {
@@ -25,7 +26,7 @@ export async function awardXp(
   amount: number,
   source: string,
   description: string
-): Promise<{ xp: number; xpLevel: number; leveledUp: boolean; previousLevel: number }> {
+): Promise<{ xp: number; xpLevel: number; leveledUp: boolean; previousLevel: number; freePerks: StoreItem[] }> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { xp: true, xpLevel: true },
@@ -37,6 +38,18 @@ export async function awardXp(
   const newXp = user.xp + amount;
   const newLevel = calculateLevel(newXp);
 
+  // Collect free perks for every level gained
+  const freePerks: StoreItem[] = [];
+  for (let lvl = previousLevel + 1; lvl <= newLevel; lvl++) {
+    const perkIds = LEVEL_UP_FREE_PERKS[lvl];
+    if (perkIds) {
+      for (const itemId of perkIds) {
+        const item = STORE_ITEMS.find((i) => i.id === itemId);
+        if (item) freePerks.push(item);
+      }
+    }
+  }
+
   await prisma.$transaction([
     prisma.user.update({
       where: { id: userId },
@@ -45,6 +58,11 @@ export async function awardXp(
     prisma.xpTransaction.create({
       data: { userId, amount, source, description },
     }),
+    ...freePerks.map((item) =>
+      prisma.storePurchase.create({
+        data: { userId, itemId: item.id, cost: 0 },
+      })
+    ),
   ]);
 
   return {
@@ -52,6 +70,7 @@ export async function awardXp(
     xpLevel: newLevel,
     leveledUp: newLevel > previousLevel,
     previousLevel,
+    freePerks,
   };
 }
 

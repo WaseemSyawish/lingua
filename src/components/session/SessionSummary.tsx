@@ -25,6 +25,8 @@ import {
   Sparkles,
   CheckCircle2,
   AlertCircle,
+  Gift,
+  Package,
 } from "lucide-react";
 
 interface SessionSummaryProps {
@@ -261,6 +263,62 @@ export default function SessionSummary({
                           </Badge>
                         </motion.div>
                       )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+
+              {/* Free Perks Card */}
+              {data.freePerks && data.freePerks.length > 0 && (
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.08 }}
+                >
+                  <Card className="border-violet-500/30 bg-gradient-to-r from-violet-500/10 via-purple-500/8 to-violet-500/5 overflow-hidden relative">
+                    <div className="absolute inset-0 pointer-events-none">
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-violet-400/10 to-transparent"
+                        animate={{ x: ["-100%", "200%"] }}
+                        transition={{ duration: 2.5, repeat: 2, ease: "easeInOut" }}
+                      />
+                    </div>
+                    <CardContent className="p-4 relative">
+                      <div className="flex items-center gap-2 mb-3">
+                        <motion.div
+                          animate={{ rotate: [0, -10, 10, 0], scale: [1, 1.1, 1] }}
+                          transition={{ delay: 0.5, duration: 0.6 }}
+                          className="size-8 rounded-lg bg-violet-500/20 flex items-center justify-center ring-1 ring-violet-500/30"
+                        >
+                          <Gift className="size-4 text-violet-500" />
+                        </motion.div>
+                        <div>
+                          <p className="text-xs text-muted-foreground font-medium">Level-Up Reward</p>
+                          <p className="text-sm font-bold text-violet-600 dark:text-violet-400">
+                            {data.freePerks.length === 1 ? "Free perk unlocked!" : `${data.freePerks.length} free perks unlocked!`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {data.freePerks.map((perk, i) => (
+                          <motion.div
+                            key={perk.id}
+                            initial={{ x: -10, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.6 + i * 0.1 }}
+                            className="flex items-center gap-2 bg-violet-500/10 rounded-lg px-3 py-2"
+                          >
+                            <Package className="size-4 text-violet-500 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold">{perk.name}</p>
+                              <p className="text-[10px] text-muted-foreground">{perk.description}</p>
+                            </div>
+                            <Badge className="ml-auto text-[10px] bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/30 shrink-0">
+                              Free!
+                            </Badge>
+                          </motion.div>
+                        ))}
+                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>
