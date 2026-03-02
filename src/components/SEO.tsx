@@ -11,7 +11,15 @@ export default function SEO({
   description = "Learn French with your personal AI tutor. Adaptive conversations, progress tracking, and structured curriculum from A0 to C2.",
   noIndex = false,
 }: SEOProps) {
-  const fullTitle = title ? `${title} | Lingua` : "Lingua — AI French Tutor";
+  const normalizedTitle = title?.trim();
+  const hasLinguaBrand = normalizedTitle
+    ? /\blingua\b/i.test(normalizedTitle)
+    : false;
+  const fullTitle = normalizedTitle
+    ? hasLinguaBrand
+      ? normalizedTitle
+      : `${normalizedTitle} | Lingua`
+    : "Lingua — AI Language Tutor";
 
   return (
     <Head>
@@ -24,7 +32,6 @@ export default function SEO({
       <meta name="twitter:card" content="summary" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      <link rel="icon" href="/favicon.ico" />
       {noIndex && <meta name="robots" content="noindex,nofollow" />}
     </Head>
   );
