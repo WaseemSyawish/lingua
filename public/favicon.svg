@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
-  <rect x="24" y="24" width="208" height="208" rx="56" fill="#111827" />
-  <path d="M72 82C72 69.84 81.84 60 94 60H162C174.16 60 184 69.84 184 82V138C184 150.16 174.16 160 162 160H118L88 185V160H94C81.84 160 72 150.16 72 138V82Z" fill="white" fill-opacity="0.14"/>
-  <path d="M72 82C72 69.84 81.84 60 94 60H162C174.16 60 184 69.84 184 82V138C184 150.16 174.16 160 162 160H118L88 185V160H94C81.84 160 72 150.16 72 138V82Z" stroke="white" stroke-opacity="0.96" stroke-width="9.2" stroke-linejoin="round"/>
-  <path d="M106 92V134H144" stroke="white" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="159.2" cy="90.4" r="9.6" fill="#F59E0B" fill-opacity="0.95"/>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="#111827" />
+  <path d="M64 78C64 63.64 75.64 52 90 52H166C180.36 52 192 63.64 192 78V142C192 156.36 180.36 168 166 168H120L84 198V168H90C75.64 168 64 156.36 64 142V78Z" fill="white" fill-opacity="0.14"/>
+  <path d="M64 78C64 63.64 75.64 52 90 52H166C180.36 52 192 63.64 192 78V142C192 156.36 180.36 168 166 168H120L84 198V168H90C75.64 168 64 156.36 64 142V78Z" stroke="white" stroke-opacity="0.96" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M102 86V136H150" stroke="white" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="168" cy="84" r="11" fill="#F59E0B" fill-opacity="0.95"/>
 </svg>
