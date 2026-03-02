@@ -14,8 +14,10 @@ export default async function handler(
   if (!authRateLimit(req, res)) return;
 
   const { email, password, name } = req.body;
+  const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+  const normalizedName = typeof name === "string" ? name.trim() : "";
 
-  if (!email || !password || !name) {
+  if (!normalizedEmail || !password || !normalizedName) {
     return res.status(400).json({ error: "Email, password, and name are required" });
   }
 
@@ -24,7 +26,7 @@ export default async function handler(
   }
 
   const existingUser = await prisma.user.findUnique({
-    where: { email },
+    where: { email: normalizedEmail },
   });
 
   if (existingUser) {
@@ -35,8 +37,8 @@ export default async function handler(
 
   const user = await prisma.user.create({
     data: {
-      email,
-      name,
+      email: normalizedEmail,
+      name: normalizedName,
       passwordHash,
     },
   });

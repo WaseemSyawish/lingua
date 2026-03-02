@@ -1,6 +1,8 @@
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import type { GetServerSideProps } from "next";
+import { getProviders } from "next-auth/react";
 import { motion } from "motion/react";
 import SEO from "@/components/SEO";
 import { useTheme } from "@/components/ThemeProvider";
@@ -26,8 +28,16 @@ const benefits = [
   { icon: <BarChart3 className="size-4" />, text: "Track your progress in real time" },
 ];
 
-export default function SignUpPage() {
+interface SignUpPageProps {
+  googleEnabled: boolean;
+}
+
+export default function SignUpPage({ googleEnabled }: SignUpPageProps) {
   const router = useRouter();
+  const callbackUrl =
+    typeof router.query.callbackUrl === "string"
+      ? router.query.callbackUrl
+      : "/onboarding";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,8 +71,9 @@ export default function SignUpPage() {
       }
 
       const result = await signIn("credentials", {
-        email,
+        identifier: email,
         password,
+        callbackUrl,
         redirect: false,
       });
 
@@ -70,7 +81,7 @@ export default function SignUpPage() {
         setError(result.error);
         setLoading(false);
       } else {
-        router.push("/onboarding");
+        window.location.assign(result?.url || callbackUrl);
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -225,7 +236,8 @@ export default function SignUpPage() {
               <Button
                 variant="outline"
                 className="w-full h-11 rounded-xl text-sm"
-                onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
+                onClick={() => signIn("google", { callbackUrl })}
+                disabled={!googleEnabled}
               >
                 <svg className="size-4 mr-2" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -235,6 +247,11 @@ export default function SignUpPage() {
                 </svg>
                 Continue with Google
               </Button>
+              {!googleEnabled && (
+                <p className="mt-2 text-xs text-muted-foreground text-center">
+                  Google sign-in is not configured for this environment.
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -252,3 +269,12 @@ export default function SignUpPage() {
     </div>
   );
 }
+
+export const getServerSideProps: GetServerSideProps<SignUpPageProps> = async () => {
+  const providers = await getProviders();
+  return {
+    props: {
+      googleEnabled: Boolean(providers?.google),
+    },
+  };
+};

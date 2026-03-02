@@ -26,24 +26,36 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        identifier: { label: "Email or User ID", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required");
+        const identifier = (credentials?.identifier ?? "").trim();
+        const password = credentials?.password ?? "";
+
+        if (!identifier || !password) {
+          throw new Error("Email/User ID and password are required");
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { id: identifier },
+              { email: identifier.toLowerCase() },
+            ],
+          },
         });
 
-        if (!user || !user.passwordHash) {
+        if (!user) {
           throw new Error("Invalid email or password");
         }
 
+        if (!user.passwordHash) {
+          throw new Error("This account has no password. Please continue with Google.");
+        }
+
         const isValid = await bcrypt.compare(
-          credentials.password,
+          password,
           user.passwordHash
         );
 
@@ -63,9 +75,12 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
+        if (!user.email) {
+          return false;
+        }
         // Single query: fetch user + their google account together
         const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! },
+          where: { email: user.email.toLowerCase() },
           include: {
             accounts: {
               where: {
@@ -92,7 +107,7 @@ export const authOptions: NextAuthOptions = {
           // New user — create user + account in one transaction
           await prisma.user.create({
             data: {
-              email: user.email!,
+              email: user.email.toLowerCase(),
               name: user.name || "Learner",
               image: user.image,
               accounts: { create: accountData },
@@ -110,8 +125,9 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user, trigger }) {
       if (user) {
+        if (!user.email) return token;
         const dbUser = await prisma.user.findUnique({
-          where: { email: user.email! },
+          where: { email: user.email.toLowerCase() },
           select: {
             id: true,
             name: true,
