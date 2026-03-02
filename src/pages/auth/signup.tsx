@@ -1,8 +1,6 @@
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import type { GetServerSideProps } from "next";
-import { getProviders } from "next-auth/react";
 import { motion } from "motion/react";
 import SEO from "@/components/SEO";
 import { useTheme } from "@/components/ThemeProvider";
@@ -28,11 +26,7 @@ const benefits = [
   { icon: <BarChart3 className="size-4" />, text: "Track your progress in real time" },
 ];
 
-interface SignUpPageProps {
-  googleEnabled: boolean;
-}
-
-export default function SignUpPage({ googleEnabled }: SignUpPageProps) {
+export default function SignUpPage() {
   const router = useRouter();
   const callbackUrl =
     typeof router.query.callbackUrl === "string"
@@ -237,7 +231,6 @@ export default function SignUpPage({ googleEnabled }: SignUpPageProps) {
                 variant="outline"
                 className="w-full h-11 rounded-xl text-sm"
                 onClick={() => signIn("google", { callbackUrl })}
-                disabled={!googleEnabled}
               >
                 <svg className="size-4 mr-2" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -247,11 +240,6 @@ export default function SignUpPage({ googleEnabled }: SignUpPageProps) {
                 </svg>
                 Continue with Google
               </Button>
-              {!googleEnabled && (
-                <p className="mt-2 text-xs text-muted-foreground text-center">
-                  Google sign-in is not configured for this environment.
-                </p>
-              )}
             </CardContent>
           </Card>
 
@@ -269,12 +257,3 @@ export default function SignUpPage({ googleEnabled }: SignUpPageProps) {
     </div>
   );
 }
-
-export const getServerSideProps: GetServerSideProps<SignUpPageProps> = async () => {
-  const providers = await getProviders();
-  return {
-    props: {
-      googleEnabled: Boolean(providers?.google),
-    },
-  };
-};
