@@ -14,6 +14,11 @@ export interface SessionInfo {
   messageCount: number;
   startedAt: string;
   endedAt: string | null;
+  focusConcepts?: string[];
+  summary?: {
+    topicsCovered: string;
+    overallNotes: string;
+  } | null;
 }
 
 export interface UserProgress {
@@ -52,6 +57,39 @@ export interface SessionAnalysis {
   suggestedFocus: string[];
 }
 
+export interface SessionSummaryData {
+  summary: {
+    topicsCovered: string;
+    vocabularyIntroduced: string;
+    grammarPracticed: string;
+    errorsObserved: string;
+    overallNotes: string;
+  };
+  conceptResults: Array<{
+    conceptId: string;
+    previousScore: number;
+    newScore: number;
+    delta: number;
+    progressLabel: "struggling" | "making_progress" | "getting_comfortable" | "strong";
+    evidence: string;
+    sessionsWithEvidence: number;
+  }>;
+  sessionHighlights: {
+    didWell: string[];
+    focusNextTime: string[];
+    tutorClosingNote: string;
+  };
+  sessionMeta: {
+    sessionType: string;
+    durationMinutes: number;
+    exchangeCount: number;
+  };
+  suggestedFocus: string[];
+  xpAwarded?: number;
+  leveledUp?: boolean;
+  newLevel?: number;
+}
+
 export interface PlacementResult {
   level: CEFRLevel;
   analysis: {
@@ -68,8 +106,9 @@ export interface PlacementResult {
 }
 
 export interface StreamEvent {
-  type: "delta" | "done" | "error";
+  type: "delta" | "done" | "error" | "session_complete";
   text?: string;
   error?: string;
   messageId?: string;
+  sessionId?: string;
 }

@@ -46,6 +46,12 @@ export default async function handler(
       },
     });
 
+    // Mark placement as completed on the User record (used by JWT / middleware)
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { placementCompleted: true },
+    });
+
     return res.json({ level: CEFRLevel.A0 });
   } catch (error) {
     console.error("Skip placement error:", error);

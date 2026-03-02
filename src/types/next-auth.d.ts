@@ -10,6 +10,8 @@ declare module "next-auth" {
       image?: string;
       cefrLevel: CEFRLevel;
       placementCompleted: boolean;
+      targetLanguage: string;
+      nativeLanguage: string;
     };
   }
 }
@@ -19,5 +21,7 @@ declare module "next-auth/jwt" {
     userId: string;
     cefrLevel: CEFRLevel;
     placementCompleted: boolean;
+    targetLanguage: string;
+    nativeLanguage: string;
   }
 }

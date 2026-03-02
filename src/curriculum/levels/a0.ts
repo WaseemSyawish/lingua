@@ -55,5 +55,6 @@ export const a0Curriculum: LevelCurriculum = {
     "vocab.daily_nouns_basic",
     "vocab.responses_basic",
     "vocab.numbers_1_10",
+    "vocab.identity_basic",
   ],
 };

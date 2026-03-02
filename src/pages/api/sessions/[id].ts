@@ -30,7 +30,33 @@ export default async function handler(
       return res.status(404).json({ error: "Session not found" });
     }
 
-    return res.json({ session: conversationSession });
+    // Normalize the response so the client gets lowercase role values and analysis from summary
+    return res.json({
+      session: {
+        id: conversationSession.id,
+        sessionNumber: conversationSession.sessionNumber,
+        sessionType: conversationSession.sessionType,
+        startedAt: conversationSession.startedAt,
+        endedAt: conversationSession.endedAt,
+        focusConcepts: conversationSession.focusConcepts,
+        summary: conversationSession.summary?.overallNotes || null,
+        messages: conversationSession.messages.map((m) => ({
+          id: m.id,
+          role: m.role.toLowerCase(),
+          content: m.content,
+          createdAt: m.createdAt,
+        })),
+        analysis: conversationSession.summary
+          ? {
+              topicsCovered: conversationSession.summary.topicsCovered,
+              vocabularyIntroduced: conversationSession.summary.vocabularyIntroduced,
+              grammarPracticed: conversationSession.summary.grammarPracticed,
+              errorsObserved: conversationSession.summary.errorsObserved,
+              overallNotes: conversationSession.summary.overallNotes,
+            }
+          : null,
+      },
+    });
   }
 
   if (req.method === "PATCH") {

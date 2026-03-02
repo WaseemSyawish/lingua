@@ -28,6 +28,8 @@ enum SessionType {
   LESSON
   FREE_CONVERSATION
   REVIEW
+  READING
+  WRITING
 }
 
 enum ConceptType {
@@ -48,6 +50,9 @@ model User {
   targetLanguage     String              @default("fr")
   currentCEFRLevel   CEFRLevel           @default(A0)
   placementCompleted Boolean             @default(false)
+  xp                 Int                 @default(0)
+  xpLevel            Int                 @default(1)
+  coins              Int                 @default(0)
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 
@@ -56,6 +61,8 @@ model User {
   skillProfile       SkillProfile?
   conceptMasteries   ConceptMastery[]
   levelHistory       LevelHistory[]
+  xpTransactions     XpTransaction[]
+  storePurchases     StorePurchase[]
 
   @@map("users")
 }
@@ -88,6 +95,7 @@ model SkillProfile {
   grammarScore         Float     @default(0)
   fluencyScore         Float     @default(0)
   overallConfidence    Float     @default(0)
+  interests            String[]  @default([])
   placementCompletedAt DateTime?
   lastAssessedAt       DateTime  @default(now())
 
@@ -129,13 +137,14 @@ model ConversationMessage {
 }
 
 model ConceptMastery {
-  id            String      @id @default(cuid())
-  userId        String
-  conceptId     String
-  conceptType   ConceptType
-  masteryScore  Float       @default(0)
-  practiceCount Int         @default(0)
-  lastPracticed DateTime?
+  id                   String      @id @default(cuid())
+  userId               String
+  conceptId            String
+  conceptType          ConceptType
+  masteryScore         Float       @default(0)
+  practiceCount        Int         @default(0)
+  sessionsWithEvidence Int         @default(0)
+  lastPracticed        DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -170,4 +179,31 @@ model SessionSummary {
   session ConversationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@map("session_summaries")
+}
+
+model XpTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int
+  source      String
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("xp_transactions")
+}
+
+model StorePurchase {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String
+  cost      Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("store_purchases")
 }

@@ -63,77 +63,91 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
+        // Single query: fetch user + their google account together
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email! },
+          include: {
+            accounts: {
+              where: {
+                provider: "google",
+                providerAccountId: account.providerAccountId,
+              },
+            },
+          },
         });
 
+        const accountData = {
+          type: account.type,
+          provider: account.provider,
+          providerAccountId: account.providerAccountId,
+          refresh_token: account.refresh_token ?? null,
+          access_token: account.access_token ?? null,
+          expires_at: account.expires_at ?? null,
+          token_type: account.token_type ?? null,
+          scope: account.scope ?? null,
+          id_token: account.id_token ?? null,
+        };
+
         if (!existingUser) {
-          const newUser = await prisma.user.create({
+          // New user — create user + account in one transaction
+          await prisma.user.create({
             data: {
               email: user.email!,
               name: user.name || "Learner",
               image: user.image,
+              accounts: { create: accountData },
             },
           });
-
+        } else if (existingUser.accounts.length === 0) {
+          // Existing user, first time with Google — just add the account
           await prisma.account.create({
-            data: {
-              userId: newUser.id,
-              type: account.type,
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              refresh_token: account.refresh_token,
-              access_token: account.access_token,
-              expires_at: account.expires_at,
-              token_type: account.token_type,
-              scope: account.scope,
-              id_token: account.id_token,
-            },
+            data: { userId: existingUser.id, ...accountData },
           });
-        } else {
-          const existingAccount = await prisma.account.findUnique({
-            where: {
-              provider_providerAccountId: {
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-              },
-            },
-          });
-
-          if (!existingAccount) {
-            await prisma.account.create({
-              data: {
-                userId: existingUser.id,
-                type: account.type,
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-                refresh_token: account.refresh_token,
-                access_token: account.access_token,
-                expires_at: account.expires_at,
-                token_type: account.token_type,
-                scope: account.scope,
-                id_token: account.id_token,
-              },
-            });
-          }
         }
+        // else: user + account already exist, nothing to do
       }
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email! },
           select: {
             id: true,
+            name: true,
             currentCEFRLevel: true,
             placementCompleted: true,
+            targetLanguage: true,
+            nativeLanguage: true,
           },
         });
         if (dbUser) {
           token.userId = dbUser.id;
+          token.name = dbUser.name;
           token.cefrLevel = dbUser.currentCEFRLevel;
           token.placementCompleted = dbUser.placementCompleted;
+          token.targetLanguage = dbUser.targetLanguage;
+          token.nativeLanguage = dbUser.nativeLanguage;
+        }
+      }
+      // When the client calls update(), refresh from DB
+      if (trigger === "update" && token.userId) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.userId as string },
+          select: {
+            name: true,
+            currentCEFRLevel: true,
+            placementCompleted: true,
+            targetLanguage: true,
+            nativeLanguage: true,
+          },
+        });
+        if (dbUser) {
+          token.name = dbUser.name;
+          token.cefrLevel = dbUser.currentCEFRLevel;
+          token.placementCompleted = dbUser.placementCompleted;
+          token.targetLanguage = dbUser.targetLanguage;
+          token.nativeLanguage = dbUser.nativeLanguage;
         }
       }
       return token;
@@ -141,9 +155,14 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.userId as string;
+        if (token.name) session.user.name = token.name as string;
         (session.user as any).cefrLevel = token.cefrLevel as string;
         (session.user as any).placementCompleted =
           token.placementCompleted as boolean;
+        (session.user as any).targetLanguage =
+          (token.targetLanguage as string) || "fr";
+        (session.user as any).nativeLanguage =
+          (token.nativeLanguage as string) || "en";
       }
       return session;
     },

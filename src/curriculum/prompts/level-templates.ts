@@ -82,9 +82,9 @@ const levelConfigs: Record<CEFRLevel, LevelPromptConfig> = {
   },
 };
 
-export function generateLevelPrompt(level: CEFRLevel): string {
+export function generateLevelPrompt(level: CEFRLevel, language: string = "fr"): string {
   const config = levelConfigs[level];
-  const curriculum = getCurriculumForLevel(level);
+  const curriculum = getCurriculumForLevel(level, language);
 
   return `
 CURRENT LEARNER LEVEL: ${config.levelName}
@@ -111,11 +111,12 @@ ${config.exampleInteraction}`;
 
 export function generateFocusPrompt(
   focusConcepts: string[],
-  level: CEFRLevel
+  level: CEFRLevel,
+  language: string = "fr"
 ): string {
   if (focusConcepts.length === 0) return "";
 
-  const curriculum = getCurriculumForLevel(level);
+  const curriculum = getCurriculumForLevel(level, language);
   const focusDetails: string[] = [];
 
   for (const conceptId of focusConcepts) {

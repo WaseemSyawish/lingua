@@ -1,77 +1,122 @@
 import React from "react";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Volume2, VolumeX, Loader2 } from "lucide-react";
 
 interface MessageBubbleProps {
   role: "user" | "assistant" | "system";
   content: string;
   isStreaming?: boolean;
+  userName?: string;
+  tutorInitial?: string;
+  tutorName?: string;
+  onSpeak?: (text: string) => void;
+  isSpeaking?: boolean;
+  isSpeechLoading?: boolean;
+}
+
+function getUserInitials(name?: string): string {
+  if (!name || !name.trim()) return "U";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return parts[0][0].toUpperCase();
 }
 
 export default function MessageBubble({
   role,
   content,
   isStreaming,
+  userName,
+  tutorInitial = "A",
+  tutorName = "Amélie",
+  onSpeak,
+  isSpeaking,
+  isSpeechLoading,
 }: MessageBubbleProps) {
-  const isUser = role === "user";
-
   if (role === "system") {
     return (
-      <div className="flex justify-center my-2">
-        <div className="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs px-4 py-2 rounded-full max-w-md text-center">
+      <div className="flex justify-center my-3">
+        <div className="bg-muted text-muted-foreground text-xs px-4 py-2 rounded-full max-w-md text-center">
           {content}
         </div>
       </div>
     );
   }
 
+  const isUser = role === "user";
+
   return (
     <div
       className={cn("flex w-full mb-4", isUser ? "justify-end" : "justify-start")}
     >
-      {/* Avatar */}
       {!isUser && (
         <div className="flex-shrink-0 mr-3 mt-1">
-          <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
-            <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-              A
-            </span>
-          </div>
+          <Avatar className="size-8">
+            <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+              {tutorInitial}
+            </AvatarFallback>
+          </Avatar>
         </div>
       )}
 
-      {/* Bubble */}
       <div
         className={cn(
           "max-w-[80%] sm:max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
           isUser
-            ? "bg-indigo-600 text-white rounded-br-md"
-            : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-md"
+            ? "bg-primary text-primary-foreground rounded-br-md"
+            : "bg-card border rounded-bl-md"
         )}
       >
-        {/* Render content with basic formatting */}
         <div className="whitespace-pre-wrap break-words">
           {content}
           {isStreaming && !content && (
             <span className="inline-flex gap-1 ml-1">
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <span
+                className="size-1.5 bg-muted-foreground rounded-full animate-bounce"
+                style={{ animationDelay: "0ms" }}
+              />
+              <span
+                className="size-1.5 bg-muted-foreground rounded-full animate-bounce"
+                style={{ animationDelay: "150ms" }}
+              />
+              <span
+                className="size-1.5 bg-muted-foreground rounded-full animate-bounce"
+                style={{ animationDelay: "300ms" }}
+              />
             </span>
           )}
           {isStreaming && content && (
-            <span className="inline-block w-0.5 h-4 bg-gray-400 dark:bg-gray-500 ml-0.5 animate-pulse" />
+            <span className="inline-block w-0.5 h-4 bg-muted-foreground ml-0.5 animate-pulse" />
           )}
         </div>
+        {/* Speak button — only on completed assistant messages */}
+        {!isUser && !isStreaming && content && onSpeak && (
+          <button
+            onClick={() => onSpeak(content)}
+            className="mt-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+            title={isSpeechLoading ? "Cancel" : isSpeaking ? "Stop speaking" : `Listen to ${tutorName}`}
+          >
+            {isSpeechLoading ? (
+              <Loader2 className="size-3 animate-spin" />
+            ) : isSpeaking ? (
+              <VolumeX className="size-3" />
+            ) : (
+              <Volume2 className="size-3" />
+            )}
+            <span>{isSpeechLoading ? "Loading…" : isSpeaking ? "Stop" : "Listen"}</span>
+          </button>
+        )}
       </div>
 
-      {/* User avatar */}
       {isUser && (
         <div className="flex-shrink-0 ml-3 mt-1">
-          <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-            <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-              U
-            </span>
-          </div>
+          <Avatar className="size-8">
+            <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-semibold">
+              {getUserInitials(userName)}
+            </AvatarFallback>
+          </Avatar>
         </div>
       )}
     </div>

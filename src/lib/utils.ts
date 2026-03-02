@@ -1,7 +1,9 @@
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 import { CEFRLevel } from "@/generated/prisma/enums";
 
-export function cn(...classes: (string | boolean | undefined | null)[]): string {
-  return classes.filter(Boolean).join(" ");
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
 
 export const CEFR_ORDER: CEFRLevel[] = [
@@ -18,17 +20,17 @@ export function cefrToIndex(level: CEFRLevel): number {
   return CEFR_ORDER.indexOf(level);
 }
 
-export function cefrLabel(level: CEFRLevel): string {
-  const labels: Record<CEFRLevel, string> = {
-    A0: "Pre-beginner",
-    A1: "Beginner",
-    A2: "Elementary",
-    B1: "Intermediate",
-    B2: "Upper Intermediate",
-    C1: "Advanced",
-    C2: "Mastery",
+export function cefrLabel(level: CEFRLevel | string): string {
+  const labels: Record<string, string> = {
+    A0: "Découverte",
+    A1: "Fondations",
+    A2: "En Route",
+    B1: "Conversation",
+    B2: "Aisance",
+    C1: "Maîtrise",
+    C2: "Excellence",
   };
-  return labels[level];
+  return labels[level] || level;
 }
 
 export function formatDate(date: Date | string): string {

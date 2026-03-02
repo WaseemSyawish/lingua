@@ -18,7 +18,11 @@ export default async function handler(
   }
 
   try {
-    const [profile, masteries, sessions, levelHistory] = await Promise.all([
+    const [user, profile, masteries, sessions, levelHistory] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { targetLanguage: true },
+      }),
       prisma.skillProfile.findUnique({
         where: { userId: session.user.id },
       }),
@@ -27,7 +31,7 @@ export default async function handler(
         orderBy: { masteryScore: "desc" },
       }),
       prisma.conversationSession.findMany({
-        where: { userId: session.user.id },
+        where: { userId: session.user.id, messageCount: { gt: 0 } },
         orderBy: { startedAt: "desc" },
         take: 30,
         select: {
@@ -37,6 +41,13 @@ export default async function handler(
           messageCount: true,
           startedAt: true,
           endedAt: true,
+          focusConcepts: true,
+          summary: {
+            select: {
+              topicsCovered: true,
+              overallNotes: true,
+            },
+          },
         },
       }),
       prisma.levelHistory.findMany({
@@ -89,7 +100,7 @@ export default async function handler(
     }
 
     // Level progress
-    const levelConceptIds = getAllConceptIds(profile.currentLevel);
+    const levelConceptIds = getAllConceptIds(profile.currentLevel, user?.targetLanguage || "fr");
     const levelMasteries = masteries.filter((m) =>
       levelConceptIds.includes(m.conceptId)
     );

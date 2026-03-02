@@ -24,13 +24,17 @@ export default async function proxy(req: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
+  // Redirect users who already completed placement AWAY from onboarding
+  if (token && token.placementCompleted && pathname === "/onboarding") {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
   // Redirect authenticated users who haven't completed placement to onboarding
   if (
     token &&
     !token.placementCompleted &&
     pathname !== "/onboarding" &&
-    PROTECTED_ROUTES.some((route) => pathname.startsWith(route)) &&
-    pathname !== "/onboarding"
+    PROTECTED_ROUTES.some((route) => pathname.startsWith(route))
   ) {
     // Only redirect to onboarding from protected routes (not from API routes)
     if (!pathname.startsWith("/api")) {

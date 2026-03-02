@@ -1,15 +1,16 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 
-const globalForAnthropic = globalThis as unknown as {
-  anthropic: Anthropic | undefined;
+const globalForOpenAI = globalThis as unknown as {
+  openai: OpenAI | undefined;
 };
 
-export const anthropic =
-  globalForAnthropic.anthropic ??
-  new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
+export const openai =
+  globalForOpenAI.openai ??
+  new OpenAI({
+    baseURL: "https://models.inference.ai.azure.com",
+    apiKey: process.env.GITHUB_TOKEN,
   });
 
 if (process.env.NODE_ENV !== "production") {
-  globalForAnthropic.anthropic = anthropic;
+  globalForOpenAI.openai = openai;
 }

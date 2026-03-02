@@ -4,6 +4,8 @@ import { ChatMessage } from "@/types";
 interface UseChatOptions {
   sessionId: string;
   onError?: (error: string) => void;
+  onPlacementComplete?: () => void;
+  onSessionComplete?: (sessionId: string) => void;
 }
 
 interface UseChatReturn {
@@ -15,7 +17,7 @@ interface UseChatReturn {
   setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
 }
 
-export function useChat({ sessionId, onError }: UseChatOptions): UseChatReturn {
+export function useChat({ sessionId, onError, onPlacementComplete, onSessionComplete }: UseChatOptions): UseChatReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,15 +31,19 @@ export function useChat({ sessionId, onError }: UseChatOptions): UseChatReturn {
 
       setError(null);
 
-      // Add user message immediately
-      const userMessage: ChatMessage = {
-        id: `user-${Date.now()}`,
-        role: "user",
-        content: content.trim(),
-        createdAt: new Date().toISOString(),
-      };
+      const isWarmIntro = content.trim() === "[START_SESSION]";
 
-      setMessages((prev) => [...prev, userMessage]);
+      // Add user message immediately (skip for warm intro — tutor speaks first)
+      if (!isWarmIntro) {
+        const userMessage: ChatMessage = {
+          id: `user-${Date.now()}`,
+          role: "user",
+          content: content.trim(),
+          createdAt: new Date().toISOString(),
+        };
+
+        setMessages((prev) => [...prev, userMessage]);
+      }
 
       // Add placeholder for assistant response
       const assistantId = `assistant-${Date.now()}`;
@@ -93,24 +99,41 @@ export function useChat({ sessionId, onError }: UseChatOptions): UseChatReturn {
 
                 if (data.type === "delta") {
                   setMessages((prev) =>
-                    prev.map((msg) =>
-                      msg.id === assistantId
-                        ? { ...msg, content: msg.content + data.text }
-                        : msg
-                    )
+                    prev.map((msg) => {
+                      if (msg.id !== assistantId) return msg;
+                      // Strip any [SESSION_COMPLETE] or [ASSESSMENT_READY] markers that leaked through streaming
+                      const cleaned = (msg.content + data.text)
+                        .replace(/\[SESSION_COMPLETE\]/g, "")
+                        .replace(/\[ASSESSMENT_READY\]/g, "")
+                        .replace(/\n{3,}/g, "\n\n"); // collapse leftover blank lines
+                      return { ...msg, content: cleaned };
+                    })
                   );
                 } else if (data.type === "error") {
                   setError(data.error);
                   onError?.(data.error);
                 } else if (data.type === "done") {
-                  // Update the assistant message ID with the server-provided one
+                  // Update the assistant message ID and do final content cleanup
                   setMessages((prev) =>
-                    prev.map((msg) =>
-                      msg.id === assistantId
-                        ? { ...msg, id: data.messageId || assistantId }
-                        : msg
-                    )
+                    prev.map((msg) => {
+                      if (msg.id !== assistantId) return msg;
+                      // Final belt-and-suspenders cleanup of any leaked markers
+                      const finalContent = msg.content
+                        .replace(/\[SESSION_COMPLETE\]/gi, "")
+                        .replace(/\[ASSESSMENT_READY\]/gi, "")
+                        .replace(/\[SESSION_COMPLET[E]?\]/gi, "")
+                        .replace(/\[ASSESSMENT_READ[Y]?\]/gi, "")
+                        .replace(/\n{3,}/g, "\n\n")
+                        .trim();
+                      return { ...msg, id: data.messageId || assistantId, content: finalContent };
+                    })
                   );
+                } else if (data.type === "placement_complete") {
+                  // Placement session has reached its final exchange
+                  onPlacementComplete?.();
+                } else if (data.type === "session_complete") {
+                  // Regular session has auto-completed via [SESSION_COMPLETE] marker
+                  onSessionComplete?.(data.sessionId || sessionId);
                 }
               } catch {
                 // Ignore malformed JSON
@@ -135,7 +158,7 @@ export function useChat({ sessionId, onError }: UseChatOptions): UseChatReturn {
         abortControllerRef.current = null;
       }
     },
-    [sessionId, isStreaming, onError]
+    [sessionId, isStreaming, onError, onPlacementComplete, onSessionComplete]
   );
 
   // Cleanup on unmount

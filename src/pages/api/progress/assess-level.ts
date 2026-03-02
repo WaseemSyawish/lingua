@@ -32,9 +32,14 @@ export default async function handler(
       return res.status(404).json({ error: "No skill profile found" });
     }
 
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { targetLanguage: true },
+    });
+
     const currentLevel = profile.currentLevel;
     const currentIndex = cefrToIndex(currentLevel);
-    const conceptIds = getAllConceptIds(currentLevel);
+    const conceptIds = getAllConceptIds(currentLevel, user?.targetLanguage || "fr");
 
     // Get mastery scores for current level concepts
     const masteries = await prisma.conceptMastery.findMany({
