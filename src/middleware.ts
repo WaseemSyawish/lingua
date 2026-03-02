@@ -8,8 +8,17 @@ const PROTECTED_ROUTES = ["/dashboard", "/practice", "/progress", "/history", "/
 // Routes only for unauthenticated users
 const AUTH_ROUTES = ["/auth/signin", "/auth/signup"];
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export default async function proxy(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: isProduction,
+    cookieName: isProduction
+      ? "__Secure-next-auth.session-token"
+      : "next-auth.session-token",
+  });
   const { pathname } = req.nextUrl;
 
   // Redirect authenticated users away from auth pages
