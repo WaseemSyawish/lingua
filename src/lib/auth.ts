@@ -6,6 +6,12 @@ import bcrypt from "bcryptjs";
 
 const isProduction = process.env.NODE_ENV === "production";
 
+// Vercel doesn't automatically set NEXTAUTH_URL — derive it from VERCEL_URL if missing.
+// VERCEL_URL is auto-set by Vercel but contains no protocol prefix.
+if (!process.env.NEXTAUTH_URL && process.env.VERCEL_URL) {
+  process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
+}
+
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   cookies: {
